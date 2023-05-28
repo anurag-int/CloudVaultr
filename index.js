@@ -4,6 +4,7 @@ require("dotenv").config();
 const PORT = process.env.PORT || 4000;
 const cloudinary = require('cloudinary').v2;
 
+
 //middlewares
 app.use(express.json());
 const fileUpload = require("express-fileupload"); // fileupload is use to upload the data in the server.
