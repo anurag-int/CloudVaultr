@@ -1,31 +1,42 @@
 const express = require('express');
 const app = express();
+
+
+
 require("dotenv").config();
 const PORT = process.env.PORT || 4000;
-const cloudinary = require('cloudinary').v2;
 
-
-//middlewares
+//middleware 
 app.use(express.json());
-const fileUpload = require("express-fileupload"); // fileupload is use to upload the data in the server.
-app.use(fileUpload);
+const fileupload = require("express-fileupload"); // fileupload is use to upload the data in the server.
+app.use(fileupload());
+
 
 //connection with Database
 const db = require('./config/database');
 
 
-
-// Connection with Cloud
-require("./config/cloudinary");
-
+//connection with cloud.
+const cloudinary = require("./config/cloudinary");
 
 
+
+app.get("/", (req, res)=>{
+    console.log("Home route");
+    res.send(`<h1>Home Page</h1>`);
+
+    return res.json({
+        message : "Welcome to home page!"
+    })
+})
 
 // API Routes
 const Upload = require("./routes/FileUpload");
-app.use('api/users/upload', Upload);
+app.use('/api/v1/upload', Upload);
 
 
-app.listen(PORT, ()=>{
+app.listen(PORT, (req, res)=>{
     console.log(`Server Started At port ${PORT}`);
 })
+
+module.exports = app;
