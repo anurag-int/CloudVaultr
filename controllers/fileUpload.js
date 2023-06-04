@@ -47,6 +47,7 @@ function isfileTypeSupported(type, supportedTypes)
 
 async function uploadFileToCloudinary(file, folder){
     const options = {folder};
+    options.resource_type = "auto";
     return await cloudinary.uploader.upload(file.tempFilePath, options);
 }
 
@@ -59,9 +60,11 @@ exports.imageUpload = async(req, res)=>{
         console.log(name, tags, email);
 
         const file = req.files.imageFile;
-        console.log(file);
-        //validation
         
+        console.log(file);
+
+
+        //validation
         const supportedTypes = ["jpg", "jpeg", "png"];
         const fileType = file.name.split('.')[1].toLowerCase();
         
@@ -81,12 +84,12 @@ exports.imageUpload = async(req, res)=>{
         
 
         // saving entries into database
-        // const fileData = await File.create({
-        //     name,
-        //     tags,
-        //     email,
-        //     imageUrl
-        // })
+        const fileData = await File.create({
+            name,
+            tags,
+            email,
+            imageUrl : response.secure_url
+        });
 
         res.status(200).json({
             success : true,
@@ -106,6 +109,64 @@ exports.imageUpload = async(req, res)=>{
 }
 
 
+exports.videoUpload = async(req, res)=>{
+
+    try{
+        // data fetch
+    const {name, tags, email} = req.body;
+    console.log(name, tags, email)
+    
+    const file = req.files.videoFile;
+    console.log(file);
+
+    //validation-1
+    const supportedTypes = ["mp4", "mov"];
+    const fileType = file.name.split('.')[1].toLowerCase();
+
+    if(!isfileTypeSupported(fileType, supportedTypes))
+    {
+        return res.status(400).json({
+            success : false,
+            message : "File not supported"
+        })
+    }
+
+    // validation -2
+    if(req.files.videoFile.size > 5000000)
+        {
+            res.status(400).json({
+                success : false,
+                message : "The file is bigger than 5 MB"
+        })
+        
+    }
 
 
+    //uploading on cloud
+    const response = await uploadFileToCloudinary(file, "galaxy");
+    console.log(response);
 
+    // saving entries into database
+    const fileData = await File.create({
+        name,
+        tags,
+        email,
+        imageUrl : response.secure_url
+    });
+
+    res.status(200).json({
+        success : true,
+        imageUrl:response.secure_url,
+        message : "Video successfully Uploaded."
+    })
+    }
+    catch(err)
+    {
+        res.status(400).json({
+            success : false,
+            message : "Something went wrong"
+        })
+    }
+
+    
+}
