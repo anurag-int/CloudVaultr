@@ -1,11 +1,11 @@
 const express = require('express');
-const cloudinary = require('cloudinary');
+const cloudinary = require("cloudinary").v2;
 const File = require('../models/File');
 require("dotenv").config();
 
 
 // for local file upload
-const localFileUpload = async(req, res)=>{
+exports.localFileUpload = async(req, res)=>{
     try{
         // fetching file from the request
         const file = req.files.file;
@@ -52,31 +52,33 @@ async function uploadFileToCloudinary(file, folder){
 
 
 // for Image Upload
-const imageUpload = async(req, res)=>{
+exports.imageUpload = async(req, res)=>{
     try{
         //data fetch
-        const {name, tags, email,imageFile} = req.body;
+        const {name, tags, email} = req.body;
         console.log(name, tags, email);
 
         const file = req.files.imageFile;
-
+        console.log(file);
         //validation
+        
         const supportedTypes = ["jpg", "jpeg", "png"];
         const fileType = file.name.split('.')[1].toLowerCase();
         
         if(!isfileTypeSupported(fileType, supportedTypes))
         {
             return res.status(400).json({
-                success : "false",
+                success : false,
                 message : "File not supported"
             })
         }
         
-
+        
         //uploading file to cloudinary
         const response = await uploadFileToCloudinary(file, "galaxy");
+        
         console.log(response);
-
+        
 
         // saving entries into database
         // const fileData = await File.create({
@@ -86,12 +88,14 @@ const imageUpload = async(req, res)=>{
         //     imageUrl
         // })
 
-        return res.status(200).json({
-            success : "true",
+        res.status(200).json({
+            success : true,
+            imageUrl:response.secure_url,
             message : "image successfully Uploaded"
         })
     }
     catch(err){
+        console.log("Hello");
         console.error(err);
         res.status(400).json({
             success : false,
@@ -103,6 +107,5 @@ const imageUpload = async(req, res)=>{
 
 
 
-module.exports = {localFileUpload, imageUpload};
 
 
